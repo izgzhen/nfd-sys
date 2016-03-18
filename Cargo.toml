@@ -1,0 +1,12 @@
+[package]
+name = "nfd"
+version = "0.1.0"
+authors = ["Zhen Zhang <izgzhen@gmail.com>"]
+build = "build.rs"
+
+[dependencies]
+libc = "0.2.0"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
