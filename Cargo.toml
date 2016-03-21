@@ -7,6 +7,9 @@ build = "build.rs"
 [dependencies]
 libc = "0.2.0"
 
+[target.'cfg(target_os = "macos")'.dependencies]
+cocoa = "0.2.5"
+
 [[bin]]
 name = "main"
 path = "src/main.rs"

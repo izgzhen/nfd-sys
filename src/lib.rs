@@ -1,7 +1,9 @@
 #![crate_name = "nfd"]
-#![feature(link_args)]
 
 extern crate libc;
+
+#[cfg(target_os = "macos")]
+extern crate cocoa;
 
 use libc::{size_t, c_char};
 
@@ -9,7 +11,7 @@ use libc::{size_t, c_char};
 pub struct NFDPathSet {
     buf: *mut c_char,
     indices: *mut size_t, /* byte offsets into buf */
-    count: size_t,    /* number of indices into buf */
+    count: size_t,        /* number of indices into buf */
 }
 
 #[repr(C)]
@@ -25,5 +27,4 @@ extern {
     pub fn NFD_OpenDialog(filterList: *const c_char,
                           defaultPath: *const c_char,
                           outPath: *mut (*mut c_char)) -> NFDResult;
-
 }
