@@ -1,5 +1,8 @@
 [package]
 name = "nfd"
+description = "experimental binding to nativefiledialog"
+license = "MIT"
+repository = "https://github.com/izgzhen/nfd"
 version = "0.1.0"
 authors = ["Zhen Zhang <izgzhen@gmail.com>"]
 build = "build.rs"
@@ -15,7 +18,3 @@ cocoa = "0.2.5"
 
 [lib]
 name = "nfd"
-
-[[bin]]
-name = "main"
-path = "src/main.rs"
