@@ -3,5 +3,6 @@
 Experimental bindings to [nativefiledialog](https://github.com/mlabbe/nativefiledialog).
 
 ## Current status
-We can link against the built library, but failed in both Linux (GTK) and OS X (AppKit)
-for finding the symbols. For specific info, please see issues.
+* [x] OS X (10.11)
+* [x] Linux x86_64 (Ubuntu 15.04)
+* [ ] Linux x86_32

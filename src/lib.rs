@@ -2,6 +2,9 @@
 
 extern crate libc;
 
+#[cfg(target_os = "linux")]
+extern crate gtk;
+
 #[cfg(target_os = "macos")]
 extern crate cocoa;
 
@@ -22,7 +25,7 @@ pub enum NFDResult {
     NFD_CANCEL,      /* user pressed cancel */
 }
 
-#[link(name = "nfd")]
+#[link(name = "nfd", kind = "static")]
 extern {
     pub fn NFD_OpenDialog(filterList: *const c_char,
                           defaultPath: *const c_char,
