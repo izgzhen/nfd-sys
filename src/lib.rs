@@ -80,18 +80,17 @@ pub fn open_dialog_multiple(filter_list: Option<&str>, default_path: Option<&str
             None => std::ptr::null()
         };
 
-        match NFD_OpenDialogMultiple(filter_list_ptr, default_path_ptr, out_pathset) {
+        let ret = match NFD_OpenDialogMultiple(filter_list_ptr, default_path_ptr, out_pathset) {
             nfdresult_t::NFD_ERROR  => Err(NFDErrorType::ProgrammaticError),
             nfdresult_t::NFD_OKAY   => {
-                let indices: Vec<size_t> = Vec::from_raw_parts((*out_pathset).indices,
-                                                               (*out_pathset).count,
-                                                               (*out_pathset).count);
+                let count = NFD_PathSet_GetCount(out_pathset);
+                let indices: Vec<size_t> = Vec::from_raw_parts((*out_pathset).indices, count, count);
                 let mut paths = vec![];
 
-                for i in 0..(indices.len() - 1) {
-                    let ptr = (*out_pathset).buf.offset(indices[i] as isize);
+                for i in 0..(count - 1) {
+                    let ptr = NFD_PathSet_GetPath(out_pathset, indices[i]);
                     let len = indices[i + 1] - indices[i];
-                    paths.push(String::from_raw_parts(ptr as *mut u8, len, len));
+                    paths.push(String::from_raw_parts(ptr as *mut u8, len - 1, len));
                 }
 
                 let ptr = (*out_pathset).buf.offset(indices[indices.len() - 1] as isize);
@@ -102,8 +101,21 @@ pub fn open_dialog_multiple(filter_list: Option<&str>, default_path: Option<&str
                     },
                     Err(_) => Err(NFDErrorType::InvalidPath),
                 }
+
             },
             nfdresult_t::NFD_CANCEL => Err(NFDErrorType::CancelledByUser),
+        };
+
+        NFD_PathSet_Free(out_pathset);
+        ret
+    }
+}
+
+pub fn get_error() -> String {
+    unsafe {
+        match CString::from_raw(NFD_GetError() as *mut nfdchar_t).into_string() {
+            Ok(s) => s,
+            Err(e) => panic!("{:?}", e),
         }
     }
 }

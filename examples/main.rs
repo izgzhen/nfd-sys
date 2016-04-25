@@ -6,4 +6,7 @@ fn main() {
         Ok(paths) => println!("Paths: {:?}", paths),
         Err(e)    => println!("Errors: {:?}", e)
     }
+
+    let last_err = get_error();
+    println!("last error: {:?}", last_err);
 }
