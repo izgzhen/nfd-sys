@@ -1,3 +1,7 @@
+//!
+//! Rust bindings to nativefiledialog
+//!
+
 #![crate_name = "nfd"]
 
 extern crate libc;
@@ -8,53 +12,98 @@ extern crate gtk;
 #[cfg(target_os = "macos")]
 extern crate cocoa;
 
-use libc::{size_t, c_char};
+mod ffi;
 
-pub type NFDChar = c_char;
+use std::ptr;
+use std::ffi::CString;
+use libc::{size_t};
+use ffi::*;
 
-#[repr(C)]
-pub struct NFDPathSet {
-    buf: *mut c_char,
-    indices: *mut size_t, /* byte offsets into buf */
-    count: size_t,        /* number of indices into buf */
-}
-
-#[repr(C)]
 #[derive(Debug)]
-pub enum NFDResult {
-    NFD_ERROR,       /* programmatic error */
-    NFD_OKAY,        /* user pressed okay, or successful return */
-    NFD_CANCEL,      /* user pressed cancel */
+pub enum NFDErrorType {
+    ProgrammaticError,
+    CancelledByUser,
+    InvalidPath,
 }
 
-#[link(name = "nfd", kind = "static")]
-extern {
-    /* single file open dialog */
-    pub fn NFD_OpenDialog(filterList: *const NFDChar,
-                          defaultPath: *const NFDChar,
-                          outPath: *mut (*mut NFDChar)) -> NFDResult;
+pub type NFDResult<T> = Result<T, NFDErrorType>;
 
-    /* multiple file open dialog */
-    pub fn NFD_OpenDialogMultiple(filterList: *const NFDChar,
-                                  defaultPath: *const NFDChar,
-                                  outPaths: *mut NFDPathSet) -> NFDResult;
+pub fn open_dialog(filter_list: Option<&str>, default_path: Option<&str>) -> NFDResult<String> {
+    unsafe {
+        let out_path: *mut (*mut nfdchar_t) = &mut ptr::null_mut();
 
-    /* save dialog */
-    pub fn NFD_SaveDialog(filterList: *const NFDChar,
-                          defaultPath: *const NFDChar,
-                          outPath: *mut (*mut NFDChar)) -> NFDResult;
+        let filter_list_ptr = match filter_list {
+            Some(fl_str) => CString::new(fl_str).unwrap().as_ptr(),
+            None => std::ptr::null()
+        };
 
-    /* get last error -- set when nfdresult_t returns NFD_ERROR */
-    pub fn NFD_GetError() -> *const NFDChar;
+        let default_path_ptr = match default_path {
+            Some(s) => CString::new(s).unwrap().as_ptr(),
+            None => std::ptr::null()
+        };
 
-    /* get the number of entries stored in pathSet */
-    pub fn NFD_PathSet_GetCount(pathSet: *const NFDPathSet) -> size_t;
+        match NFD_OpenDialog(filter_list_ptr, default_path_ptr, out_path) {
+            nfdresult_t::NFD_ERROR => Err(NFDErrorType::ProgrammaticError),
+            nfdresult_t::NFD_OKAY => {
+                match CString::from_raw(*out_path).into_string() {
+                    Ok(s)  => Ok(s),
+                    Err(_) => Err(NFDErrorType::InvalidPath),
+                }
+            }
+            nfdresult_t::NFD_CANCEL => Err(NFDErrorType::CancelledByUser),
+        }
+    }
+}
+
+#[inline]
+pub fn save_dialog(filter_list: Option<&str>, default_path: Option<&str>) -> NFDResult<String> {
+    // The only difference is in implementation: save_dialog will have an overwrite confirmation
+    // But the interface is same
+    open_dialog(filter_list, default_path)
+}
 
 
-    /* Get the UTF-8 path at offset index */
-    pub fn NFD_PathSet_GetPath(pathSet: *const NFDPathSet,
-                               index: size_t) -> *mut NFDChar;
+pub fn open_dialog_multiple(filter_list: Option<&str>, default_path: Option<&str>) -> NFDResult<Vec<String>> {
+    unsafe {
+        let out_pathset: *mut nfdpathset_t =
+            Box::into_raw(Box::new(nfdpathset_t { buf: ptr::null_mut(),
+                                                  indices: ptr::null_mut(),
+                                                  count: 0 }));
 
-    /* Free the pathSet */
-    pub fn NFD_PathSet_Free(pathSet: *mut NFDPathSet);
+        let filter_list_ptr = match filter_list {
+            Some(fl_str) => CString::new(fl_str).unwrap().as_ptr(),
+            None => std::ptr::null()
+        };
+
+        let default_path_ptr = match default_path {
+            Some(s) => CString::new(s).unwrap().as_ptr(),
+            None => std::ptr::null()
+        };
+
+        match NFD_OpenDialogMultiple(filter_list_ptr, default_path_ptr, out_pathset) {
+            nfdresult_t::NFD_ERROR  => Err(NFDErrorType::ProgrammaticError),
+            nfdresult_t::NFD_OKAY   => {
+                let indices: Vec<size_t> = Vec::from_raw_parts((*out_pathset).indices,
+                                                               (*out_pathset).count,
+                                                               (*out_pathset).count);
+                let mut paths = vec![];
+
+                for i in 0..(indices.len() - 1) {
+                    let ptr = (*out_pathset).buf.offset(indices[i] as isize);
+                    let len = indices[i + 1] - indices[i];
+                    paths.push(String::from_raw_parts(ptr as *mut u8, len, len));
+                }
+
+                let ptr = (*out_pathset).buf.offset(indices[indices.len() - 1] as isize);
+                match CString::from_raw(ptr).into_string() {
+                    Ok(s) => {
+                        paths.push(s);
+                        Ok(paths)
+                    },
+                    Err(_) => Err(NFDErrorType::InvalidPath),
+                }
+            },
+            nfdresult_t::NFD_CANCEL => Err(NFDErrorType::CancelledByUser),
+        }
+    }
 }
