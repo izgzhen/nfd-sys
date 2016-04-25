@@ -1,9 +1,9 @@
 [package]
-name = "nfd"
-description = "experimental binding to nativefiledialog"
+name = "libnfd"
+description = "Rust bindings to nativefiledialog"
 license = "MIT"
 repository = "https://github.com/izgzhen/nfd"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Zhen Zhang <izgzhen@gmail.com>"]
 build = "build.rs"
 
