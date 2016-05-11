@@ -97,6 +97,7 @@ pub fn open_dialog_multiple(filter_list: Option<&str>, default_path: Option<&str
                 match CString::from_raw(ptr).into_string() {
                     Ok(s) => {
                         paths.push(s);
+                        NFD_PathSet_Free(out_pathset);
                         Ok(paths)
                     },
                     Err(_) => Err(NFDErrorType::InvalidPath),
@@ -105,8 +106,6 @@ pub fn open_dialog_multiple(filter_list: Option<&str>, default_path: Option<&str
             },
             nfdresult_t::NFD_CANCEL => Err(NFDErrorType::CancelledByUser),
         };
-
-        NFD_PathSet_Free(out_pathset);
         ret
     }
 }
