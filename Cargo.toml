@@ -1,8 +1,8 @@
 [package]
-name = "libnfd"
-description = "Rust bindings to nativefiledialog"
+name = "nfd-sys"
+description = "Low-level Rust bindings to nativefiledialog"
 license = "MIT"
-repository = "https://github.com/izgzhen/nfd"
+repository = "https://github.com/izgzhen/nfd-sys"
 version = "0.1.3"
 authors = ["Zhen Zhang <izgzhen@gmail.com>"]
 build = "build.rs"
@@ -15,6 +15,3 @@ gtk = "0.0.7"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 cocoa = "0.2.5"
-
-[lib]
-name = "nfd"
