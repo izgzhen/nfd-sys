@@ -31,6 +31,7 @@ pub enum nfdresult_t {
     NFD_CANCEL,      /* user pressed cancel */
 }
 
+#[cfg(unix)]
 #[link(name = "nfd", kind = "static")]
 extern {
     /* single file open dialog */
@@ -61,4 +62,54 @@ extern {
 
     /* Free the pathSet */
     pub fn NFD_PathSet_Free(pathSet: *mut nfdpathset_t);
+}
+
+
+#[cfg(windows)]
+pub fn NFD_OpenDialog(filterList: *const nfdchar_t,
+                      defaultPath: *const nfdchar_t,
+                      outPath: *mut (*mut nfdchar_t)) -> nfdresult_t {
+  panic!("nfd-sys doesn't support Windows yet.")
+}
+
+/* multiple file open dialog */
+#[cfg(windows)]
+pub fn NFD_OpenDialogMultiple(filterList: *const nfdchar_t,
+                              defaultPath: *const nfdchar_t,
+                              outPaths: *mut nfdpathset_t) -> nfdresult_t {
+  panic!("nfd-sys doesn't support Windows yet.")
+}
+
+/* save dialog */
+#[cfg(windows)]
+pub fn NFD_SaveDialog(filterList: *const nfdchar_t,
+                      defaultPath: *const nfdchar_t,
+                      outPath: *mut (*mut nfdchar_t)) -> nfdresult_t {
+  panic!("nfd-sys doesn't support Windows yet.")
+}
+
+/* get last error -- set when nfdresult_t returns NFD_ERROR */
+#[cfg(windows)]
+pub fn NFD_GetError() -> *const nfdchar_t {
+  panic!("nfd-sys doesn't support Windows yet.")
+}
+
+/* get the number of entries stored in pathSet */
+#[cfg(windows)]
+pub fn NFD_PathSet_GetCount(pathSet: *const nfdpathset_t) -> size_t {
+  panic!("nfd-sys doesn't support Windows yet.")
+}
+
+
+/* Get the UTF-8 path at offset index */
+#[cfg(windows)]
+pub fn NFD_PathSet_GetPath(pathSet: *const nfdpathset_t,
+                           index: size_t) -> *mut nfdchar_t {
+  panic!("nfd-sys doesn't support Windows yet.")
+}
+
+/* Free the pathSet */
+#[cfg(windows)]
+pub fn NFD_PathSet_Free(pathSet: *mut nfdpathset_t) {
+  panic!("nfd-sys doesn't support Windows yet.")
 }
