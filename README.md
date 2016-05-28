@@ -13,6 +13,6 @@ See [libnfd](https://github.com/izgzhen/libnfd) for high-level bindings.
 ## Dependencies
 I will try to keep this list complete. Welcome any help.
 
-+ All: `scons`
++ All: `cmake`
 + GTK (Linux) specific: `sudo apt-get install libgtk-3-dev`
 

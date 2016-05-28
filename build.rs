@@ -7,7 +7,8 @@ fn main() {
     p.push("nativefiledialog");
     p.push("src");
 
-    Command::new("scons").env("CFLAGS", "-fPIC").current_dir(&p.as_path()).status().unwrap();
+    Command::new("cmake").arg("CMakeLists.txt").current_dir(&p.as_path()).status().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
+    Command::new("make").current_dir(&p.as_path()).status().unwrap_or_else(|e| { panic!("failed to execute process: {}", e) });
 
     println!("cargo:rustc-link-search=native={}", p.to_str().unwrap());
     println!("cargo:rustc-link-lib=static=nfd");

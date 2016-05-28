@@ -3,7 +3,7 @@ name = "nfd-sys"
 description = "Low-level Rust bindings to nativefiledialog"
 license = "MIT"
 repository = "https://github.com/izgzhen/nfd-sys"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Zhen Zhang <izgzhen@gmail.com>"]
 build = "build.rs"
 
